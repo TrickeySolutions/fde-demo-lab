@@ -1,0 +1,29 @@
+# ---- Secrets & state: never commit ----
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Saved tofu/terraform plans (may embed sensitive variable values)
+tfplan
+*.tfplan
+
+# Real variable values (use terraform.tfvars.example as the template)
+terraform.tfvars
+*.auto.tfvars
+
+# Node / Wrangler
+node_modules/
+.wrangler/
+dist/
+
+# Local env files
+.env
+.envrc
+
+# OS noise
+.DS_Store
+
+# Tunnel connector command (embeds token)
+VM-CONNECT.local.txt

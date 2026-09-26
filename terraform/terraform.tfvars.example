@@ -1,0 +1,39 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+# Do NOT put secrets in here — pass those as environment variables:
+#   export TF_VAR_cloudflare_api_token="..."
+#   export TF_VAR_google_client_secret="..."   # only if google_idp_enabled = true
+
+cloudflare_account_id = "REPLACE_WITH_ACCOUNT_ID"
+
+# Zone / hostnames -----------------------------------------------------------
+zone_name        = "fde-demo.trickey.solutions"
+httpbin_hostname = "httpbin.fde-demo.trickey.solutions"
+tunnel_hostname  = "tunnel.fde-demo.trickey.solutions"
+deck_hostname    = "deck.fde-demo.trickey.solutions"
+
+# Flip to true once the zone is delegated (NS change) and shows Active.
+# Leave false for the first, account-only apply.
+zone_enabled = false
+
+# Zero Trust org (must match the team name you set when enabling Zero Trust) --
+team_name         = "fde-demo"
+team_display_name = "FDE Demo"
+
+# Origin (Azure App Service httpbin) -----------------------------------------
+azure_origin_hostname = "trick-httpbin-demo-uk-south.azurewebsites.net"
+# Optional mTLS from Cloudflare to origin (needs origin-side config first).
+authenticated_origin_pulls_enabled = false
+
+# Access allow-list (assignment step 6) --------------------------------------
+self_email              = "you@example.com"
+cloudflare_email_domain = "cloudflare.com"
+attendee_emails         = [] # added live via scripts/add-attendee.sh
+
+# Google SSO IdP (assignment step 5). Leave disabled to use One-time PIN only.
+google_idp_enabled = false
+google_client_id   = ""
+# google_client_secret via TF_VAR_google_client_secret (env), never here.
+
+# R2 (assignment step 7d) ----------------------------------------------------
+flags_bucket_name = "fde-demo-flags"
+r2_location       = "WEUR"

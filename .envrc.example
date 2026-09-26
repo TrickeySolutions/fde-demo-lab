@@ -1,0 +1,10 @@
+# Copy to .envrc (gitignored) and `direnv allow`, or source manually.
+# Secrets live here / in the environment — never in terraform.tfvars.
+
+# Cloudflare API token (Terraform + Wrangler + scripts all read one of these).
+export TF_VAR_cloudflare_api_token="REPLACE_WITH_API_TOKEN"
+export CLOUDFLARE_API_TOKEN="$TF_VAR_cloudflare_api_token"
+export CLOUDFLARE_ACCOUNT_ID="REPLACE_WITH_ACCOUNT_ID"
+
+# Google OAuth client secret — only needed if google_idp_enabled = true.
+# export TF_VAR_google_client_secret="REPLACE_WITH_GOOGLE_CLIENT_SECRET"

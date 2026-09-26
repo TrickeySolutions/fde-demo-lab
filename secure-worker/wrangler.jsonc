@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fde-demo-secure",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-15",
+
+  /**
+   * Assignment step 7: this Worker is served on tunnel.<zone>/secure* via a
+   * Worker route (owned here by Wrangler, co-located with the code). Requests
+   * to that path are authenticated by Cloudflare Access *before* they reach
+   * the Worker, so env-injected identity headers are trustworthy.
+   *
+   * `zone_name` must be the apex zone added to the account. Update the pattern
+   * if you change the tunnel hostname / secure path in Terraform variables.
+   */
+  "routes": [
+    {
+      "pattern": "tunnel.fde-demo.trickey.solutions/secure*",
+      "zone_name": "fde-demo.trickey.solutions"
+    }
+  ],
+
+  /**
+   * Assignment step 7d: the flag assets live in a PRIVATE R2 bucket, reachable
+   * only through this binding (no public r2.dev). The bucket is created by
+   * Terraform (terraform/60-r2.tf); objects are uploaded with
+   * scripts/upload-flags.sh.
+   */
+  "r2_buckets": [
+    {
+      "binding": "FLAGS",
+      "bucket_name": "fde-demo-flags"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "fde-demo-secure",
+  "private": true,
+  "version": "0.1.0",
+  "description": "FDE Demo — Cloudflare Access-protected identity Worker serving /secure and country flags from private R2.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "check": "tsc --noEmit",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260916.1",
+    "typescript": "5.9.2",
+    "wrangler": "4.133.0"
+  }
+}

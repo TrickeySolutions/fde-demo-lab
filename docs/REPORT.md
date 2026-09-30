@@ -1,6 +1,6 @@
 # Application Services Assignment — Written Report
 
-**Author:** David Trickey · Senior Solutions Engineer (Cloudflare, UK&I Public Sector)
+**Author:** David Trickey · Principle Solutions Engineer (Cloudflare, UK&I Public Sector)
 **Domain:** `fde-demo.trickey.solutions`
 **Repositories (all public):**
 - [`fde-demo-lab`](https://github.com/TrickeySolutions/fde-demo-lab) — this repo: Infrastructure-as-Code (OpenTofu), the `/secure` Worker, the click-ops guide and this report.

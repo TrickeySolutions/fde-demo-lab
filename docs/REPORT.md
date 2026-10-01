@@ -4,9 +4,8 @@
 
 Author: David Trickey, Principal Solutions Engineer (Cloudflare UK&I Public Sector) Domain: fde-demo.trickey.solutions Repositories:
 
-- fde-demo-lab — Infrastructure as Code (OpenTofu), the /secure Worker, click-ops guide, and this report
-- fde-demo-deck — the interactive presentation, itself a Cloudflare Worker, that live-tests and observes the environment
-- fde-demo-origin — a dependency-free live-reload origin used behind the Tunnel
+- fde-demo-lab — Infrastructure as Code (OpenTofu), the /secure Worker, demo origin, guide, and this report
+- fde-demo-deck — the interactive presentation, itself a Cloudflare Worker, that live-tests and observes the environment *private repo*
 
 ## The honest bit first
 

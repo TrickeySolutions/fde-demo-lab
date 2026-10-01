@@ -113,7 +113,9 @@ Built with the Wrangler CLI, served on tunnel.<zone>/secure* via a Worker route.
 
 /secure reads the Access-injected Cf-Access-Authenticated-User-Email header, timestamps the request, reads request.cf.country, and returns HTML:
 
-``` ${EMAIL} authenticated at ${TIMESTAMP} from ${COUNTRY} ```
+```text
+${EMAIL} authenticated at ${TIMESTAMP} from ${COUNTRY}
+```
 
 ${COUNTRY} is an anchor tag linking to /secure/${COUNTRY}.
 
@@ -131,19 +133,27 @@ Screenshots prove a moment in time. The live validation suite proves the environ
 
 The demo deck Worker independently interrogates the deployed environment and proves each requirement: DNS-over-HTTPS, live HTTP probes, the Cloudflare API, an external grader, a redirect probe, and a private R2 read. It produces:
 
-``` ✅ [Connect] Zone runs on Cloudflare ✅ [Connect] Origin IP hidden behind Cloudflare ✅ [Connect] Origin returns all request headers ✅ [Connect] Reachable via Cloudflare Tunnel ✅ [Protect] Full (Strict) TLS to origin ✅ [Protect] Independent TLS grade (A/A+)     <- Qualys SSL Labs ✅ [Protect] /secure locked by Zero Trust Access ✅ [Build]   Worker serves flag from private R2 Summary: 8 passed · 0 failed -> exit 0 ```
+```text
+✅ [Connect] Zone runs on Cloudflare
+✅ [Connect] Origin IP hidden behind Cloudflare
+✅ [Connect] Origin returns all request headers
+✅ [Connect] Reachable via Cloudflare Tunnel
+✅ [Protect] Full (Strict) TLS to origin
+✅ [Protect] Independent TLS grade (A/A+)     <- Qualys SSL Labs
+✅ [Protect] /secure locked by Zero Trust Access
+✅ [Build]   Worker serves flag from private R2
+Summary: 8 passed · 0 failed -> exit 0
+```
 
 The same endpoint doubles as a CI gate:
 
 ```bash
-
-## Human-readable table + pass/fail exit code
-
+# Human-readable table + pass/fail exit code
 BASE_URL=https://deck.fde-demo.trickey.solutions ./scripts/verify.sh
 
-## Raw machine-readable result
-
-curl -s https://deck.fde-demo.trickey.solutions/api/checks/run | jq ```
+# Raw machine-readable result
+curl -s https://deck.fde-demo.trickey.solutions/api/checks/run | jq
+```
 
 verify.sh exits non-zero on any hard failure, so it runs after tofu apply and wrangler deploy as the acceptance stage. The same checks could be promoted to a Cloudflare Workflow on a schedule for continuous conformance. The primitive is already there.
 

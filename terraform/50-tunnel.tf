@@ -14,8 +14,8 @@
 # tunnel itself provides the encryption, so a self-signed origin cert is fine
 # here; Full-Strict is demonstrated separately on the Azure origin.
 #
-# Run the connector on the VM with the token from the output `tunnel_token`
-# (see README / docs/ORIGIN-TUNNEL-VM.md).
+# Run the connector locally with the token from the output `tunnel_token`
+# (see docs/PREREQUISITES.md step 8).
 # https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
 # ---------------------------------------------------------------------------
 

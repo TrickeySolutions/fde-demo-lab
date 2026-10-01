@@ -20,7 +20,7 @@ in a public git repo), so treat it accordingly.
    account ID and public hostnames are not secrets and may appear in code.
 2. **Everything reproducible from code.** If you configure something in the
    dashboard during a session, fold it back into Terraform/Wrangler afterwards,
-   or record it in `docs/CLICKOPS.md` as a deliberate manual step.
+   or record it in `docs/PREREQUISITES.md` as a deliberate manual step.
 3. **Single writer per resource.** Terraform owns platform config; Wrangler owns
    the Worker (code, route, bindings). Never manage the same resource in both.
 

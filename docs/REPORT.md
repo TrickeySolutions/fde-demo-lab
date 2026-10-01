@@ -281,7 +281,7 @@ fde-demo-lab/                     # IaC, Worker, docs
     50-tunnel  60-r2  70-origin-security  80-worker-route
   secure-worker/                  # the /secure Worker (Wrangler)
   scripts/                        # bootstrap, deploy-worker, upload-flags, add-attendee, verify.sh
-  docs/                           # this report + CLICKOPS, REQUIREMENTS-COVERAGE, IAC-VS-CLICKOPS, ORIGIN-*, PREREQUISITES, DEMO-RUNBOOK
+  docs/                           # this report + PREREQUISITES, REQUIREMENTS-COVERAGE, IAC-VS-CLICKOPS
 fde-demo-deck/                    # presentation Worker: /api/checks + observability
 fde-demo-origin/                  # dependency-free live-reload origin for the Tunnel demo
 ```
@@ -295,7 +295,7 @@ fde-demo-origin/                  # dependency-free live-reload origin for the T
 | Requirement | Status | Evidence |
 | --- | --- | --- |
 | Working application accessible | Live | https://tunnel.fde-demo.trickey.solutions/secure |
-| Steps followed with config evidence | Complete | Sections above + docs/img/ screenshots + [CLICKOPS.md](CLICKOPS.md) |
+| Steps followed with config evidence | Complete | Sections above + docs/img/ screenshots |
 | Screenshots of configuration | Available | docs/img/ in fde-demo-lab |
 | Testing evidence | Live and automated | verify.sh + /api/checks/run + Qualys SSL Labs |
 | Relevant use cases described | Complete | Section 2b above |

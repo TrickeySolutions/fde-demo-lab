@@ -120,8 +120,8 @@ external origin; the Cloudflare config is identical either way.
 - Azure App Service (custom container): <https://learn.microsoft.com/azure/app-service/quickstart-custom-container>
 
 For **Full (Strict)** to validate on an external origin, give it a
-publicly-trusted certificate for `httpbin.<zone>` and lock inbound to Cloudflare
-IPs — detail in [`ORIGIN-AZURE.md`](ORIGIN-AZURE.md).
+publicly-trusted certificate for the hostname and lock inbound to
+[Cloudflare's published IP ranges](https://www.cloudflare.com/ips/).
 
 ## 8. Run the origin locally for the Tunnel — assignment step 4
 The Tunnel origin is the **same `origin-app/`** running on my own machine — a
@@ -130,8 +130,7 @@ The Tunnel origin is the **same `origin-app/`** running on my own machine — a
 node origin-app/server.mjs                                    # http://localhost:8080
 cloudflared tunnel run --token "$(tofu -chdir=terraform output -raw tunnel_token)"
 ```
-`cloudflared` dials out, so nothing is exposed inbound. Optional VM setup:
-[`ORIGIN-TUNNEL-VM.md`](ORIGIN-TUNNEL-VM.md).
+`cloudflared` dials out, so nothing is exposed inbound.
 
 ---
 

@@ -35,8 +35,8 @@ click-by-click dashboard walkthrough as the alternative.
 | --- | --- | --- |
 | Zone settings, DNS, Access (IdP/lists/apps/policies), Tunnel + ingress, R2 bucket, Authenticated Origin Pulls | **OpenTofu** (`cloudflare` v5) | `terraform/` |
 | `/secure` identity Worker — code, route, R2 binding | **Wrangler** | `secure-worker/` |
-| Tunnel connector on the VM | **cloudflared** | `docs/ORIGIN-TUNNEL-VM.md` |
-| Azure httpbin origin + custom-domain cert + IP allow-list | **Azure (documented)** | `docs/ORIGIN-AZURE.md` |
+| Tunnel connector (local origin) | **cloudflared** | run locally — `docs/PREREQUISITES.md` |
+| Header-echo origin (local or external) | **`origin-app/`** / httpbin on Azure | `origin-app/`, `docs/PREREQUISITES.md` |
 
 See `docs/IAC-VS-CLICKOPS.md` for the reasoning and the Wrangler-vs-Terraform split.
 
@@ -50,11 +50,11 @@ See `docs/IAC-VS-CLICKOPS.md` for the reasoning and the Wrangler-vs-Terraform sp
    ./scripts/bootstrap.sh
    (cd terraform && tofu apply tfplan)
    ```
-3. Bring the tunnel up on the VM using the connector token:
+3. Bring the tunnel up locally using the connector token:
    ```bash
-   (cd terraform && tofu output -raw tunnel_token)   # -> use on the VM
+   (cd terraform && tofu output -raw tunnel_token)   # -> cloudflared tunnel run --token …
    ```
-   Full VM steps: `docs/ORIGIN-TUNNEL-VM.md`.
+   Run `origin-app/` + `cloudflared` — see `docs/PREREQUISITES.md` step 8.
 4. Activate the zone (NS change), then re-apply with `zone_enabled = true` to
    create DNS + zone settings.
 5. Upload flags and deploy the Worker:
@@ -62,21 +62,16 @@ See `docs/IAC-VS-CLICKOPS.md` for the reasoning and the Wrangler-vs-Terraform sp
    ./scripts/upload-flags.sh gb us ie fr de
    ./scripts/deploy-worker.sh
    ```
-6. Test against `docs/REQUIREMENTS-COVERAGE.md` and rehearse with
-   `docs/DEMO-RUNBOOK.md`.
+6. Validate with `./scripts/verify.sh` (and `docs/REQUIREMENTS-COVERAGE.md`).
 
 ## Documentation (the assignment deliverable)
 
 | File | Purpose |
 | --- | --- |
 | `docs/REPORT.md` | The written report (deliverable 2a–2d) |
-| `docs/CLICKOPS.md` | Step-by-step dashboard walkthrough with screenshot slots |
 | `docs/REQUIREMENTS-COVERAGE.md` | Requirement-by-requirement mapping + tests |
-| `docs/DEMO-RUNBOOK.md` | Live demo flow for the panel |
 | `docs/IAC-VS-CLICKOPS.md` | IaC vs dashboard; Wrangler vs Terraform vs API/CLI |
-| `docs/ORIGIN-AZURE.md` | Azure App Service httpbin + Full-Strict cert + IP lock |
-| `docs/ORIGIN-TUNNEL-VM.md` | UTM VM: Docker httpbin + cloudflared connector |
-| `docs/PREREQUISITES.md` | One-time manual steps only you can do |
+| `docs/PREREQUISITES.md` | One-time manual steps + the values to record |
 
 ## Security
 

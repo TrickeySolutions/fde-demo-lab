@@ -91,7 +91,7 @@ variable "azure_origin_hostname" {
 }
 
 variable "authenticated_origin_pulls_enabled" {
-  description = "Enable zone-wide Authenticated Origin Pulls (mTLS from Cloudflare to origin). Effective only if the origin is configured to require Cloudflare's client cert; see docs/ORIGIN-AZURE.md. Primary non-bypass control is the Azure IP allow-list."
+  description = "Enable zone-wide Authenticated Origin Pulls (mTLS from Cloudflare to origin). Effective only if the origin is configured to require Cloudflare's client cert. Primary non-bypass control is the Cloudflare IP allow-list on the origin."
   type        = bool
   default     = false
 }

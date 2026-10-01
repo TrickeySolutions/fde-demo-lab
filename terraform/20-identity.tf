@@ -5,7 +5,7 @@
 #   1. Google OAuth  — the "real" SSO IdP. @cloudflare.com is Google Workspace,
 #      so panel members with a cloudflare.com address sign in with Google.
 #      Enabled when var.google_idp_enabled = true (needs a Google Cloud OAuth
-#      app: client id + TF_VAR_google_client_secret). Setup: docs/CLICKOPS.md.
+#      app: client id + TF_VAR_google_client_secret). Setup: docs/PREREQUISITES.md.
 #   2. One-time PIN  — always on, so any attendee email you add live can log in
 #      with an emailed code without needing a Google account.
 #

@@ -3,8 +3,7 @@
 # "Ensure nobody can bypass Cloudflare and access your server's IP directly").
 #
 # For the Tunnel origin this is automatic — there is no public inbound at all.
-# For the Azure App Service origin there are two layers, both documented in
-# docs/ORIGIN-AZURE.md:
+# For the Azure App Service origin there are two layers:
 #
 #   1. PRIMARY (required): Azure App Service Access Restrictions allowing only
 #      Cloudflare's published IP ranges (https://www.cloudflare.com/ips/).

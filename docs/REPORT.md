@@ -223,17 +223,17 @@ This design choice is intentional. If you are making the case that Workers are t
 
 ## Repository map
 
-``` fde-demo-lab/               # IaC, Worker, docs terraform/                # OpenTofu, numbered by concern 00-zone  10-dns  20-identity  30-access-lists  40-access-secure 50-tunnel  60-r2  70-origin-security  80-worker-route secure-worker/            # the /secure Worker (Wrangler) scripts/                  # bootstrap, deploy-worker, upload-flags,
-
-## add-attendee, verify.sh
-
-docs/                     # this report + CLICKOPS, REQUIREMENTS-COVERAGE,
-
-## IAC-VS-CLICKOPS, ORIGIN-*, PREREQUISITES, DEMO-RUNBOOK
-
-fde-demo-deck/              # presentation Worker: /api/checks + observability
-
-fde-demo-origin/            # dependency-free live-reload origin for the Tunnel demo ```
+```text
+fde-demo-lab/                     # IaC, Worker, docs
+  terraform/                      # OpenTofu, numbered by concern
+    00-zone  10-dns  20-identity  30-access-lists  40-access-secure
+    50-tunnel  60-r2  70-origin-security  80-worker-route
+  secure-worker/                  # the /secure Worker (Wrangler)
+  scripts/                        # bootstrap, deploy-worker, upload-flags, add-attendee, verify.sh
+  docs/                           # this report + CLICKOPS, REQUIREMENTS-COVERAGE, IAC-VS-CLICKOPS, ORIGIN-*, PREREQUISITES, DEMO-RUNBOOK
+fde-demo-deck/                    # presentation Worker: /api/checks + observability
+fde-demo-origin/                  # dependency-free live-reload origin for the Tunnel demo
+```
 
 - Validation: ./scripts/verify.sh or GET /api/checks/run
 - Requirement coverage: REQUIREMENTS-COVERAGE.md

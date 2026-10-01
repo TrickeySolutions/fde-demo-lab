@@ -59,7 +59,7 @@ Live check: GET https://httpbin.fde-demo.trickey.solutions/headers returns 200 w
 
 ![httpbin /headers response showing Cf-Ray, Cf-Connecting-Ip and Cf-Ipcountry injected by Cloudflare](img/01-headers-public.png)
 
-Reference: Cloudflare HTTP headers
+Reference: [Cloudflare HTTP headers](https://developers.cloudflare.com/fundamentals/reference/http-headers/)
 
 ### Step 2: Proxy through Cloudflare
 
@@ -69,7 +69,7 @@ IaC: [terraform/10-dns.tf](../terraform/10-dns.tf). Live check: the hostname res
 
 ![Proxied (orange-cloud) DNS record for httpbin](img/02-dns-proxied.png)
 
-Reference: DNS proxy status
+Reference: [DNS proxy status](https://developers.cloudflare.com/dns/proxy-status/)
 
 ### Step 3: Full (Strict) TLS with a non-Cloudflare certificate
 
@@ -85,7 +85,7 @@ IaC: [terraform/00-zone.tf](../terraform/00-zone.tf) with ssl = "strict". Indepe
 
 ![Qualys SSL Labs A+ grade](img/03-ssllabs-aplus.png)
 
-Reference: Full (Strict) TLS mode
+Reference: [Full (Strict) TLS mode](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/)
 
 ### Step 4: Cloudflare Tunnel on tunnel.<zone>
 
@@ -99,7 +99,7 @@ IaC: [terraform/50-tunnel.tf](../terraform/50-tunnel.tf) with config_src = "clou
 
 ![Local origin served through the Tunnel at tunnel.fde-demo.trickey.solutions](img/04-tunnel-served.png)
 
-Reference: Connect networks with Cloudflare Tunnel
+Reference: [Connect networks with Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
 
 ### Step 5: SSO Identity Provider in Zero Trust
 
@@ -111,7 +111,7 @@ IaC: [terraform/20-identity.tf](../terraform/20-identity.tf).
 
 ![Cloudflare Access login screen presented at /secure](img/05-login-screen.png)
 
-Reference: Google IdP integration
+Reference: [Google IdP integration](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/google/)
 
 ### Step 6: Lock down /secure and prevent bypass
 
@@ -127,7 +127,7 @@ IaC: [terraform/40-access-secure.tf](../terraform/40-access-secure.tf), [30-acce
 
 ![Access policy allowing my email, the @cloudflare.com domain, and the attendee list](img/06-access-policy.png)
 
-Reference: Zero Trust Access policies
+Reference: [Zero Trust Access policies](https://developers.cloudflare.com/cloudflare-one/policies/access/)
 
 ### Step 7: The Worker
 
@@ -155,7 +155,7 @@ IaC note: the Worker route is in [terraform/80-worker-route.tf](../terraform/80-
 
 ![The fde-demo-secure Worker and its tunnel/secure* route](img/07-worker-route.png)
 
-Reference: Workers | R2 Workers API | Request CF properties
+Reference: [Workers](https://developers.cloudflare.com/workers/) | [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/) | [Request CF properties](https://developers.cloudflare.com/workers/runtime-apis/request/#incomingrequestcfproperties)
 
 ### Validation: the tests are live and automated
 

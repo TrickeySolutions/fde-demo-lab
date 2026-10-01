@@ -47,6 +47,8 @@ fde-demo.trickey.solutions is active on Cloudflare with delegated nameservers. T
 
 Live check: dig NS fde-demo.trickey.solutions resolves to *.ns.cloudflare.com.
 
+![Zone active on Cloudflare with delegated nameservers](img/00-zone-active.png)
+
 ### Step 1: An origin that returns all request headers
 
 I used httpbin's /headers endpoint, which echoes every inbound HTTP header in the response body. On the public origin, this runs on Azure App Service. Behind the Tunnel, it is fde-demo-origin, a dependency-free Node.js server with live-reload, so I can demonstrate the Tunnel reconnecting in real time during a presentation.
@@ -55,6 +57,8 @@ The detail worth pausing on: once Cloudflare is in front, the response includes 
 
 Live check: GET https://httpbin.fde-demo.trickey.solutions/headers returns 200 with Cloudflare headers visible in the body.
 
+![httpbin /headers response showing Cf-Ray, Cf-Connecting-Ip and Cf-Ipcountry injected by Cloudflare](img/01-headers-public.png)
+
 Reference: Cloudflare HTTP headers
 
 ### Step 2: Proxy through Cloudflare
@@ -62,6 +66,8 @@ Reference: Cloudflare HTTP headers
 Proxied (orange-cloud) DNS for httpbin.<zone> points to the Azure origin. Cloudflare terminates TLS at the edge, applies zone settings, and hides the origin IP.
 
 IaC: terraform/10-dns.tf. Live check: the hostname resolves to Cloudflare anycast. A direct connection to the Azure IP hits a 403 from the IP allowlist we configure in Step 6.
+
+![Proxied (orange-cloud) DNS record for httpbin](img/02-dns-proxied.png)
 
 Reference: DNS proxy status
 
@@ -73,6 +79,12 @@ The Azure App Service presents a managed certificate for the hostname. The impor
 
 IaC: terraform/00-zone.tf with ssl = "strict". Independent verification: Qualys SSL Labs returns an A+ rating. I do not mark my own homework.
 
+![SSL/TLS encryption mode set to Full (strict)](img/03-ssl-full-strict.png)
+
+![Origin certificate: publicly-trusted CA, CN matching the hostname](img/03-origin-cert.png)
+
+![Qualys SSL Labs A+ grade](img/03-ssllabs-aplus.png)
+
 Reference: Full (Strict) TLS mode
 
 ### Step 4: Cloudflare Tunnel on tunnel.<zone>
@@ -83,6 +95,10 @@ A clarification that is worth getting right: a Cloudflare Tunnel is already an e
 
 IaC: terraform/50-tunnel.tf with config_src = "cloudflare" (remotely-managed ingress, not a local YAML file). Live check: the Tunnel endpoint only responds when the connector is running. If the VM is off, the check fails red. That is honest.
 
+![Cloudflare Tunnel showing a HEALTHY connector](img/04-tunnel-healthy.png)
+
+![Local origin served through the Tunnel at tunnel.fde-demo.trickey.solutions](img/04-tunnel-served.png)
+
 Reference: Connect networks with Cloudflare Tunnel
 
 ### Step 5: SSO Identity Provider in Zero Trust
@@ -90,6 +106,10 @@ Reference: Connect networks with Cloudflare Tunnel
 Google is the primary IdP. Cloudflare employees use Google Workspace, so @cloudflare.com users authenticate without needing a separate account. One-Time PIN is configured as a fallback for anyone reviewing the environment without a Google account.
 
 IaC: terraform/20-identity.tf.
+
+![Zero Trust authentication: Google SSO and One-Time PIN login methods](img/05-idps.png)
+
+![Cloudflare Access login screen presented at /secure](img/05-login-screen.png)
 
 Reference: Google IdP integration
 
@@ -104,6 +124,8 @@ Bypass is prevented in three layers:
 Live check: an unauthenticated GET to /secure returns a redirect to the Cloudflare Access login screen, not a 200.
 
 IaC: terraform/40-access-secure.tf, 30-access-lists.tf, 70-origin-security.tf.
+
+![Access policy allowing my email, the @cloudflare.com domain, and the attendee list](img/06-access-policy.png)
 
 Reference: Zero Trust Access policies
 
@@ -124,6 +146,14 @@ ${COUNTRY} is an anchor tag linking to /secure/${COUNTRY}.
 The bucket is private. There is no public URL. The only path to a flag is through the Worker, which means only through Access. The signed JWT (CF-Access-Jwt-Assertion) is available for cryptographic verification of the identity claim if stricter validation is needed; for this deployment the header injection is sufficient.
 
 IaC note: the Worker route is in terraform/80-worker-route.tf as a commented alternative, but Wrangler owns the Worker deployment to avoid dual-writer drift between Terraform state and the Workers API. The rationale is explained in IAC-VS-CLICKOPS.md.
+
+![Authenticated /secure response: email, timestamp and country link](img/07-secure-identity.png)
+
+![/secure/GB rendering the flag SVG served from private R2](img/07-flag.png)
+
+![The fde-demo-flags R2 bucket with public access disabled](img/07-r2-private.png)
+
+![The fde-demo-secure Worker and its tunnel/secure* route](img/07-worker-route.png)
 
 Reference: Workers | R2 Workers API | Request CF properties
 
@@ -156,6 +186,10 @@ curl -s https://deck.fde-demo.trickey.solutions/api/checks/run | jq
 ```
 
 verify.sh exits non-zero on any hard failure, so it runs after tofu apply and wrangler deploy as the acceptance stage. The same checks could be promoted to a Cloudflare Workflow on a schedule for continuous conformance. The primitive is already there.
+
+![scripts/verify.sh output — all checks passing with a zero exit code](img/08-verify-run.png)
+
+![The deck's interactive Output slide with every requirement check green](img/08-deck-output.png)
 
 ## 2b. Relevant use cases for the products
 
@@ -218,6 +252,10 @@ The developer experience is consistently underrated. Engineering teams that star
 The presentation for this assignment is itself a Cloudflare Worker deployed to deck.fde-demo.trickey.solutions. It runs live checks against the deployed environment, pulls real observability data from the Cloudflare GraphQL API and REST endpoints, and renders everything in a browser. The API token is a Worker secret. It never reaches the client.
 
 The observability view includes requests over time by status class, a Sankey diagram of host-to-path-to-content-type flows, DNS lookup volume, Zero Trust Access events by user, Tunnel health, and Workers execution metrics with P50 latency and error rate. None of that is in the assignment brief. It is there because it illustrates something important: the data Cloudflare generates is not locked inside the platform's own dashboards. You can pull it into anything via API. The dashboard is a convenience; the API is the product.
+
+![The deck's architecture view — the evolution from public resources to serverless, on one fabric](img/09-architecture.png)
+
+![The custom observability dashboard built in the deck Worker from the Cloudflare GraphQL + REST APIs](img/09-observability.png)
 
 This design choice is intentional. If you are making the case that Workers are the right substrate for intelligent, identity-aware applications, you should be running your demonstration on Workers. The presentation proves what it describes.
 

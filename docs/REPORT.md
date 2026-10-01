@@ -38,7 +38,7 @@ To authenticate at /secure: when Cloudflare Access intercepts the request, selec
 
 ## 2a. Steps followed, with configuration and testing evidence
 
-Screenshots of each configuration step and the working application are in the docs/img/ directory of fde-demo-lab. The requirement-by-requirement coverage matrix is in [REQUIREMENTS-COVERAGE.md](REQUIREMENTS-COVERAGE.md). What follows is the narrative of how the environment was built, with a focus on the decisions that are not obvious from the docs alone.
+Screenshots of each configuration step and the working application are in the docs/img/ directory of fde-demo-lab. What follows is the narrative of how the environment was built, with a focus on the decisions that are not obvious from the docs alone.
 
 ### Pre-requisites: zone on Cloudflare
 

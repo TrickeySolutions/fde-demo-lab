@@ -76,7 +76,7 @@ Zone SSL mode is Full (Strict). That means Cloudflare validates the certificate 
 
 The Azure App Service presents a managed certificate for the hostname. The important detail here is SNI behaviour: Full (Strict) validates against the *requested* hostname, not whichever certificate the origin has available. The default App Service certificate is for *.azurewebsites.net, which does not match httpbin.fde-demo.trickey.solutions. That drove the decision to configure a custom domain certificate on the App Service rather than using the default.
 
-IaC: [terraform/00-zone.tf](../terraform/00-zone.tf) with ssl = "strict". Independent verification: Qualys SSL Labs returns an A+ rating. I do not mark my own homework.
+IaC: [terraform/00-zone.tf](../terraform/00-zone.tf) with ssl = "strict". Independent verification: Qualys SSL Labs returns an A+ rating and verifies that this is using post quantum compliant cryptography.
 
 ![SSL/TLS encryption mode set to Full (strict)](img/03-ssl-full-strict.png)
 

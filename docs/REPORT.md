@@ -10,7 +10,7 @@ Author: David Trickey, Principal Solutions Engineer (Cloudflare UK&I Public Sect
 
 ## The honest bit first
 
-First: I used an enterprise account for this implementation rather than a free plan account which I am declaring upfront before the technical content. The reasons are practical. Sub-domain DNS delegation (fde-demo.trickey.solutions) is an Enterprise-tier feature. Activating R2 on a standard account requires adding a payment card. And I wanted to reuse an existing httpbin origin via a Snippet rather than provision a fresh one. None of this changes the core mechanics. Full Strict TLS, Cloudflare Tunnel, Zero Trust Access, Workers, and R2 bindings work identically on the free tier. The documented build in PREREQUISITES.md runs clean on a free plan apex zone, and the free tier is where any customer would start.
+First: I used an enterprise account for this implementation rather than a free plan account which I am declaring upfront before the technical content. The reasons are practical. Sub-domain DNS delegation (fde-demo.trickey.solutions) is an Enterprise-tier feature. Activating R2 on a standard account requires adding a payment card. And I wanted to reuse an existing httpbin origin via a Snippet rather than provision a fresh one. None of this changes the core mechanics. Full Strict TLS, Cloudflare Tunnel, Zero Trust Access, Workers, and R2 bindings work identically on the free tier. The documented build in [PREREQUISITES.md](PREREQUISITES.md) runs clean on a free plan apex zone, and the free tier is where any customer would start.
 
 Second: I used AI tooling to write the Terraform configuration and presentation deck boilerplate. I provided the insights, the architecture decisions, the design rationale, and the direction. The AI did the typing. 
 
@@ -39,11 +39,11 @@ To authenticate at /secure: when Cloudflare Access intercepts the request, selec
 
 ## 2a. Steps followed, with configuration and testing evidence
 
-Screenshots of each configuration step and the working application are in the docs/img/ directory of fde-demo-lab. The requirement-by-requirement coverage matrix is in REQUIREMENTS-COVERAGE.md. What follows is the narrative of how the environment was built, with a focus on the decisions that are not obvious from the docs alone.
+Screenshots of each configuration step and the working application are in the docs/img/ directory of fde-demo-lab. The requirement-by-requirement coverage matrix is in [REQUIREMENTS-COVERAGE.md](REQUIREMENTS-COVERAGE.md). What follows is the narrative of how the environment was built, with a focus on the decisions that are not obvious from the docs alone.
 
 ### Pre-requisites: zone on Cloudflare
 
-fde-demo.trickey.solutions is active on Cloudflare with delegated nameservers. The IaC operates on an already-active zone. PREREQUISITES.md covers the genuinely manual steps: the registrar nameserver change, R2 activation, and creating the Google OAuth credentials for the IdP.
+fde-demo.trickey.solutions is active on Cloudflare with delegated nameservers. The IaC operates on an already-active zone. [PREREQUISITES.md](PREREQUISITES.md) covers the genuinely manual steps: the registrar nameserver change, R2 activation, and creating the Google OAuth credentials for the IdP.
 
 Live check: dig NS fde-demo.trickey.solutions resolves to *.ns.cloudflare.com.
 
@@ -65,7 +65,7 @@ Reference: Cloudflare HTTP headers
 
 Proxied (orange-cloud) DNS for httpbin.<zone> points to the Azure origin. Cloudflare terminates TLS at the edge, applies zone settings, and hides the origin IP.
 
-IaC: terraform/10-dns.tf. Live check: the hostname resolves to Cloudflare anycast. A direct connection to the Azure IP hits a 403 from the IP allowlist we configure in Step 6.
+IaC: [terraform/10-dns.tf](../terraform/10-dns.tf). Live check: the hostname resolves to Cloudflare anycast. A direct connection to the Azure IP hits a 403 from the IP allowlist we configure in Step 6.
 
 ![Proxied (orange-cloud) DNS record for httpbin](img/02-dns-proxied.png)
 
@@ -77,7 +77,7 @@ Zone SSL mode is Full (Strict). That means Cloudflare validates the certificate 
 
 The Azure App Service presents a managed certificate for the hostname. The important detail here is SNI behaviour: Full (Strict) validates against the *requested* hostname, not whichever certificate the origin has available. The default App Service certificate is for *.azurewebsites.net, which does not match httpbin.fde-demo.trickey.solutions. That drove the decision to configure a custom domain certificate on the App Service rather than using the default.
 
-IaC: terraform/00-zone.tf with ssl = "strict". Independent verification: Qualys SSL Labs returns an A+ rating. I do not mark my own homework.
+IaC: [terraform/00-zone.tf](../terraform/00-zone.tf) with ssl = "strict". Independent verification: Qualys SSL Labs returns an A+ rating. I do not mark my own homework.
 
 ![SSL/TLS encryption mode set to Full (strict)](img/03-ssl-full-strict.png)
 
@@ -93,7 +93,7 @@ A remotely-managed Tunnel. cloudflared runs on the VM and dials outbound only, s
 
 A clarification that is worth getting right: a Cloudflare Tunnel is already an encrypted and mutually authenticated outbound connection. It does not require a separately-trusted TLS certificate at the local origin. Full (Strict) is a separate requirement on the *public* origin, demonstrating something different. They are not the same thing.
 
-IaC: terraform/50-tunnel.tf with config_src = "cloudflare" (remotely-managed ingress, not a local YAML file). Live check: the Tunnel endpoint only responds when the connector is running. If the VM is off, the check fails red. That is honest.
+IaC: [terraform/50-tunnel.tf](../terraform/50-tunnel.tf) with config_src = "cloudflare" (remotely-managed ingress, not a local YAML file). Live check: the Tunnel endpoint only responds when the connector is running. If the VM is off, the check fails red. That is honest.
 
 ![Cloudflare Tunnel showing a HEALTHY connector](img/04-tunnel-healthy.png)
 
@@ -105,7 +105,7 @@ Reference: Connect networks with Cloudflare Tunnel
 
 Google is the primary IdP. Cloudflare employees use Google Workspace, so @cloudflare.com users authenticate without needing a separate account. One-Time PIN is configured as a fallback for anyone reviewing the environment without a Google account.
 
-IaC: terraform/20-identity.tf.
+IaC: [terraform/20-identity.tf](../terraform/20-identity.tf).
 
 ![Zero Trust authentication: Google SSO and One-Time PIN login methods](img/05-idps.png)
 
@@ -115,7 +115,7 @@ Reference: Google IdP integration
 
 ### Step 6: Lock down /secure and prevent bypass
 
-A Zero Trust Access Application on tunnel.<zone>/secure with an Allow policy covering: my email address, email_domain = cloudflare.com, and a live-editable attendee list maintained via scripts/add-attendee.sh. Everyone else is denied.
+A Zero Trust Access Application on tunnel.<zone>/secure with an Allow policy covering: my email address, email_domain = cloudflare.com, and a live-editable attendee list maintained via [scripts/add-attendee.sh](../scripts/add-attendee.sh). Everyone else is denied.
 
 Bypass is prevented in three layers:
 
@@ -123,7 +123,7 @@ Bypass is prevented in three layers:
 
 Live check: an unauthenticated GET to /secure returns a redirect to the Cloudflare Access login screen, not a 200.
 
-IaC: terraform/40-access-secure.tf, 30-access-lists.tf, 70-origin-security.tf.
+IaC: [terraform/40-access-secure.tf](../terraform/40-access-secure.tf), [30-access-lists.tf](../terraform/30-access-lists.tf), [70-origin-security.tf](../terraform/70-origin-security.tf).
 
 ![Access policy allowing my email, the @cloudflare.com domain, and the attendee list](img/06-access-policy.png)
 
@@ -145,7 +145,7 @@ ${COUNTRY} is an anchor tag linking to /secure/${COUNTRY}.
 
 The bucket is private. There is no public URL. The only path to a flag is through the Worker, which means only through Access. The signed JWT (CF-Access-Jwt-Assertion) is available for cryptographic verification of the identity claim if stricter validation is needed; for this deployment the header injection is sufficient.
 
-IaC note: the Worker route is in terraform/80-worker-route.tf as a commented alternative, but Wrangler owns the Worker deployment to avoid dual-writer drift between Terraform state and the Workers API. The rationale is explained in IAC-VS-CLICKOPS.md.
+IaC note: the Worker route is in [terraform/80-worker-route.tf](../terraform/80-worker-route.tf) as a commented alternative, but Wrangler owns the Worker deployment to avoid dual-writer drift between Terraform state and the Workers API. The rationale is explained in [IAC-VS-CLICKOPS.md](IAC-VS-CLICKOPS.md).
 
 ![Authenticated /secure response: email, timestamp and country link](img/07-secure-identity.png)
 
@@ -274,23 +274,23 @@ fde-demo-origin/                  # dependency-free live-reload origin for the T
 ```
 
 - Validation: ./scripts/verify.sh or GET /api/checks/run
-- Requirement coverage: REQUIREMENTS-COVERAGE.md
-- IaC vs manual rationale: IAC-VS-CLICKOPS.md
+- Requirement coverage: [REQUIREMENTS-COVERAGE.md](REQUIREMENTS-COVERAGE.md)
+- IaC vs manual rationale: [IAC-VS-CLICKOPS.md](IAC-VS-CLICKOPS.md)
 
 ## Self-assessment against requirements
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
 | Working application accessible | Live | https://tunnel.fde-demo.trickey.solutions/secure |
-| Steps followed with config evidence | Complete | Sections above + docs/img/ screenshots + CLICKOPS.md |
+| Steps followed with config evidence | Complete | Sections above + docs/img/ screenshots + [CLICKOPS.md](CLICKOPS.md) |
 | Screenshots of configuration | Available | docs/img/ in fde-demo-lab |
 | Testing evidence | Live and automated | verify.sh + /api/checks/run + Qualys SSL Labs |
 | Relevant use cases described | Complete | Section 2b above |
 | Knowledge gaps documented | Complete | Section 2c above |
 | Target customer experience | Complete | Section 2d above |
-| Worker code in public repo via Wrangler | Complete | github.com/TrickeySolutions/fde-demo-lab/secure-worker/ |
+| Worker code in public repo via Wrangler | Complete | [secure-worker/](../secure-worker/) |
 | Non-Cloudflare TLS cert, Full (Strict) | Live | Azure managed cert, ssl = "strict" in IaC |
 | Private R2 bucket | Live | fde-demo-flags, no public bucket access |
 | SSO IdP configured | Live | Google Workspace + One-Time PIN |
-| Access policy: me + @cloudflare.com | Live | terraform/40-access-secure.tf |
+| Access policy: me + @cloudflare.com | Live | [terraform/40-access-secure.tf](../terraform/40-access-secure.tf) |
 | Origin bypass prevented | Live | Tunnel (no public IP), IP allowlist, Authenticated Origin Pulls |

@@ -45,7 +45,7 @@ Screenshots of each configuration step and the working application are in the do
 
 fde-demo.trickey.solutions is active on Cloudflare with delegated nameservers. The IaC operates on an already-active zone. [PREREQUISITES.md](PREREQUISITES.md) covers the genuinely manual steps: the registrar nameserver change, R2 activation, and creating the Google OAuth credentials for the IdP.
 
-Live check: dig NS fde-demo.trickey.solutions resolves to *.ns.cloudflare.com.
+Live check: [dig NS fde-demo.trickey.solutions resolves to *.ns.cloudflare.com.](https://digwebinterface.com/?hostnames=fde-demo.trickey.solutions&type=NS&ns=resolver&useresolver=8.8.8.8&nameservers=)
 
 ![Zone active on Cloudflare with delegated nameservers](img/00-zone-active.png)
 

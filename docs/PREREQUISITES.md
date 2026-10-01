@@ -5,6 +5,26 @@ zone activation, enabling Zero Trust/R2, the OAuth app). Do them once, then the
 Terraform + Wrangler in this repo does the rest. Each links to the relevant
 Cloudflare docs.
 
+As you go, **record the values you choose or are given** — they are the Terraform
+inputs. Copy `terraform/terraform.tfvars.example` → `terraform.tfvars` and fill in
+the non-secret ones; put secrets in `.envrc` (both gitignored). Don't hardcode
+them anywhere else.
+
+| Value | Terraform input | Where it lives | Secret |
+| --- | --- | --- | --- |
+| Account ID | `cloudflare_account_id` | `terraform.tfvars` | no |
+| API token | `cloudflare_api_token` | `.envrc` → `TF_VAR_cloudflare_api_token` | **yes** |
+| Apex domain | `zone_name` | `terraform.tfvars` | no |
+| Zero Trust team name | `team_name` | `terraform.tfvars` (must match dashboard) | no |
+| Your admin email | `self_email` | `terraform.tfvars` | no |
+| Allowed email domain | `cloudflare_email_domain` | `terraform.tfvars` | no |
+| Public origin hostname | `azure_origin_hostname` | `terraform.tfvars` | no |
+| Google OAuth client ID | `google_client_id` | `terraform.tfvars` | no |
+| Google OAuth client secret | `google_client_secret` | `.envrc` → `TF_VAR_google_client_secret` | **yes** |
+
+The demo hostnames (`httpbin_hostname`, `tunnel_hostname`, `deck_hostname`) default
+to names under `zone_name`; override them only if you want different labels.
+
 ## 1. Create the free Cloudflare account
 - Sign up at <https://dash.cloudflare.com/sign-up> and verify the email.
 - Note the **Account ID** (Dashboard → any domain → right sidebar, or
@@ -38,17 +58,17 @@ zones are Enterprise. On a free account:
 
 ## 3. Enable Zero Trust (Access) — set the team name
 - Dashboard → **Zero Trust** → complete onboarding.
-- **Team name must equal `var.team_name`** (default `fde-demo`); the auth
-  domain becomes `fde-demo.cloudflareaccess.com`. This cannot be changed later
-  without pain.
+- The **team name you choose must match `team_name`** in `terraform.tfvars`; the
+  auth domain becomes `<team-name>.cloudflareaccess.com`. It can't be changed
+  later without pain, so pick it deliberately.
 - Pick the **Free** Zero Trust plan (covers up to 50 users — ample here).
 - Docs: <https://developers.cloudflare.com/cloudflare-one/setup/>
 
 ## 4. Enable R2
 - Dashboard → **R2** → enable. This may prompt for a payment method even though
   usage stays within the always-free tier (10 GB storage / class-A+B ops).
-- No bucket to create by hand — Terraform creates the private `fde-demo-flags`
-  bucket.
+- No bucket to create by hand — Terraform creates the private flags bucket
+  (name set by `flags_bucket_name`).
 - Docs: <https://developers.cloudflare.com/r2/get-started/> ·
   pricing <https://developers.cloudflare.com/r2/pricing/>
 
@@ -69,18 +89,18 @@ Create a **custom token** (My Profile → API Tokens → Create Token → Custom
 | Zone › SSL and Certificates | Edit | Full-Strict + AOP |
 | Zone › Zone Settings | Edit | TLS settings |
 
-Scope the zone rows to the `fde-demo.trickey.solutions` zone. Put the token in
-`.envrc` as `TF_VAR_cloudflare_api_token` (and mirror to `CLOUDFLARE_API_TOKEN`).
+Scope the zone rows to **your** zone (`zone_name`). Put the token in `.envrc` as
+`TF_VAR_cloudflare_api_token` (and mirror to `CLOUDFLARE_API_TOKEN`) — never in tfvars.
 - Docs: <https://developers.cloudflare.com/fundamentals/api/get-started/create-token/>
 
 ## 6. (Optional) Google OAuth app for SSO — assignment step 5
 Only needed if `google_idp_enabled = true`. One-time PIN works without it.
 - Google Cloud Console → APIs & Services → **Credentials** → **Create OAuth
   client ID** → *Web application*.
-- Authorized redirect URI: `https://<team>.cloudflareaccess.com/cdn-cgi/access/callback`
-  (i.e. `https://fde-demo.cloudflareaccess.com/cdn-cgi/access/callback`).
-- Copy the client ID → `google_client_id` in tfvars; client secret →
-  `TF_VAR_google_client_secret` env var.
+- Authorized redirect URI: `https://<team-name>.cloudflareaccess.com/cdn-cgi/access/callback`
+  (using the `team_name` from step 3).
+- Copy the client ID → `google_client_id` (tfvars); client secret →
+  `TF_VAR_google_client_secret` (env var, never committed).
 - Docs: <https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/google/>
 
 ## 7. Run the header-echo origin — assignment steps 1–3
@@ -115,10 +135,20 @@ cloudflared tunnel run --token "$(tofu -chdir=terraform output -raw tunnel_token
 
 ---
 
-### Apply order summary
-1. Steps 1,3,4,5 done → `zone_enabled = false` apply (account-level infra +
-   tunnel + Access apps).
-2. Bring the tunnel up locally (step 8) using `tofu output -raw tunnel_token`.
-3. Step 2 done (zone Active) → set `zone_enabled = true`, re-apply (DNS + TLS).
-4. `upload-flags.sh` → `deploy-worker.sh`.
-5. Run/point the public origin (step 7) and test.
+### Order of operations
+
+The one thing that needs sequencing is the zone: nameserver changes (step 2) take
+time to go **Active**, and some resources can't be created until they are. So the
+apply happens in **two passes**, gated by `zone_enabled`.
+
+1. **Do the prerequisites (1–6)** and fill `terraform.tfvars` + `.envrc`. Kick off
+   the nameserver change (step 2) early — it propagates while you continue.
+2. **First apply with `zone_enabled = false`** — everything that doesn't need the
+   zone active: Zero Trust org + IdP, lists, Access apps, the Tunnel, and R2.
+3. **Start the origin + Tunnel** (steps 7–8): run `origin-app`, then
+   `cloudflared tunnel run --token "$(tofu -chdir=terraform output -raw tunnel_token)"`.
+4. **Once the zone shows Active** (`dig NS <your-domain>`), set
+   `zone_enabled = true` and **apply again** — adds DNS, Full (Strict) TLS and the
+   Worker route.
+5. **Publish the app:** `scripts/upload-flags.sh` then `scripts/deploy-worker.sh`.
+6. **Validate:** `scripts/verify.sh` (or open the live hostnames).

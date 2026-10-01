@@ -1,0 +1,11 @@
+{
+  "name": "fde-demo-origin",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Tiny dependency-free live-reload origin — prove the Cloudflare Tunnel serves your local machine by editing a page live.",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  }
+}

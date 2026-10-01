@@ -12,15 +12,27 @@ Cloudflare docs.
   (`cloudflare_account_id`) and `.envrc` (`CLOUDFLARE_ACCOUNT_ID`).
 - Docs: <https://developers.cloudflare.com/fundamentals/setup/account/create-account/>
 
-## 2. Add + activate the apex zone
-The free plan only supports **full (apex) zones** — subdomain zones are
-Enterprise-only, so we use an apex such as `fde-demo.trickey.solutions` and
-change its nameservers.
-- Dashboard → **Add a domain** → enter the apex → choose the **Free** plan.
-- Copy the two assigned Cloudflare nameservers and set them at the registrar
-  (or delegate via NS records at the parent).
-- Wait for the zone to show **Active** (`dig NS <zone>` returns Cloudflare NS).
+## 2. Add your domain and change nameservers at your registrar
+Free and Pro onboard a **full apex zone** (e.g. `example.com`); subdomain-only
+zones are Enterprise. On a free account:
+- Dashboard → **Add a domain** → enter your **apex** domain → select **Free**.
+- Review the DNS records Cloudflare imports from your current provider.
+- Cloudflare shows **two nameservers** (e.g. `ada.ns.cloudflare.com` and
+  `rob.ns.cloudflare.com`).
+- Sign in to your **domain registrar** (GoDaddy, Namecheap, 123-reg, Cloudflare
+  Registrar, etc.), open the domain's **nameserver / DNS** settings, and
+  **replace** the current nameservers with Cloudflare's two. Remove any others.
+- Save. Propagation is usually minutes but can take up to ~24h.
+- The zone turns **Active** once Cloudflare detects the change — confirm with
+  `dig NS example.com`.
 - Only then set `zone_enabled = true` and re-apply.
+
+> **Live-demo note.** This environment is published at
+> `fde-demo.trickey.solutions` — a *subdomain* delegated to Cloudflare as its own
+> zone, which requires Enterprise. That is purely presentation convenience; on a
+> free account you onboard the apex (`trickey.solutions`) exactly as above and
+> everything downstream is identical.
+
 - Docs: <https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/> ·
   <https://developers.cloudflare.com/dns/zone-setups/>
 
@@ -71,24 +83,42 @@ Only needed if `google_idp_enabled = true`. One-time PIN works without it.
   `TF_VAR_google_client_secret` env var.
 - Docs: <https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/google/>
 
-## 7. Azure httpbin origin — assignment steps 1–3
-- You already run httpbin on Azure App Service (free tier), e.g.
-  `trick-httpbin-demo-uk-south.azurewebsites.net`.
-- To make **Full (Strict)** validate for `httpbin.<zone>`, add the subdomain as
-  an App Service **custom domain** and enable the **free App Service Managed
-  Certificate** (or plan an origin SNI override). Then lock inbound to
-  Cloudflare IPs. Full detail: `ORIGIN-AZURE.md`.
+## 7. Run the header-echo origin — assignment steps 1–3
+Any origin that returns the request headers works; **Cloudflare is agnostic to
+the origin host.** This repo ships a tiny, dependency-free one in
+[`origin-app/`](../origin-app/) (Node 18+, nothing to install): it serves a page
+plus **`/headers`** (echoes the inbound request headers) and live-reloads on save.
+```bash
+node origin-app/server.mjs      # serves on http://localhost:8080
+```
+Point your proxied DNS record (or the Tunnel) at wherever you run it.
 
-## 8. Local UTM VM — assignment step 4
-- A Windows (or Linux) VM in UTM running Docker + `cloudflared`. Full detail:
-  `ORIGIN-TUNNEL-VM.md`.
+In the deployed example the **public** origin is an implementation of **httpbin**
+in a **Docker container** on a **free Azure App Service** plan — one choice of
+external origin; the Cloudflare config is identical either way.
+- httpbin image: <https://hub.docker.com/r/kennethreitz/httpbin>
+- Azure App Service (custom container): <https://learn.microsoft.com/azure/app-service/quickstart-custom-container>
+
+For **Full (Strict)** to validate on an external origin, give it a
+publicly-trusted certificate for `httpbin.<zone>` and lock inbound to Cloudflare
+IPs — detail in [`ORIGIN-AZURE.md`](ORIGIN-AZURE.md).
+
+## 8. Run the origin locally for the Tunnel — assignment step 4
+The Tunnel origin is the **same `origin-app/`** running on my own machine — a
+**Mac laptop**, no VM required (a VM works identically). On macOS:
+```bash
+node origin-app/server.mjs                                    # http://localhost:8080
+cloudflared tunnel run --token "$(tofu -chdir=terraform output -raw tunnel_token)"
+```
+`cloudflared` dials out, so nothing is exposed inbound. Optional VM setup:
+[`ORIGIN-TUNNEL-VM.md`](ORIGIN-TUNNEL-VM.md).
 
 ---
 
 ### Apply order summary
 1. Steps 1,3,4,5 done → `zone_enabled = false` apply (account-level infra +
    tunnel + Access apps).
-2. Bring the tunnel up on the VM (step 8) using `tofu output -raw tunnel_token`.
+2. Bring the tunnel up locally (step 8) using `tofu output -raw tunnel_token`.
 3. Step 2 done (zone Active) → set `zone_enabled = true`, re-apply (DNS + TLS).
 4. `upload-flags.sh` → `deploy-worker.sh`.
-5. Configure Azure origin (step 7) and test.
+5. Run/point the public origin (step 7) and test.
